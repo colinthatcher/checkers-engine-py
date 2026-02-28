@@ -1,17 +1,22 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from checkers.checkers import Checkers
 from checkers.tui.ConnectionManager import ConnectionManager
 
+
 app = FastAPI(title="Checkers Engine")
-manager = ConnectionManager()
+templates = Jinja2Templates(directory="templates")
+
+
+manager = ConnectionManager(templates)
 game = Checkers()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html", context={})
 
 
 @app.get("/game", response_model=None)
