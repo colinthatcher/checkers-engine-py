@@ -1,9 +1,11 @@
 # checkers-engine-py
 
 ## Install
-`uv venv`
-`source .venv/bin/activate`
-`uv sync`
+```bash
+uv venv
+source .venv/bin/activate
+uv sync
+```
 
 ## Run API Server
 `fastapi dev main.py`
