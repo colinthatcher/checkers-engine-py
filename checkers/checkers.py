@@ -1,3 +1,4 @@
+import logging
 from pydantic import BaseModel, Field, model_serializer
 from enum import StrEnum
 
@@ -51,7 +52,7 @@ def check_winner(board) -> str | None:
                 black_count += 1
             elif piece == Piece.WHITE_PIECE:
                 white_count += 1
-    
+
     if black_count == 0:
         return "black"
     elif white_count == 0:
@@ -59,12 +60,23 @@ def check_winner(board) -> str | None:
     return None
 
 
-def attempt_move(board, player_color: PlayerColor, move: MoveType, start: Coord, end: Coord) -> bool:
+# TODO: We will need to check an array of moves, dunno if we want that in here or in a wrapper method
+def attempt_move(
+    board, player_color: PlayerColor, move: MoveType, start: Coord, end: Coord
+) -> bool:
     if start == None or end == None:
         return False
 
-    if start.x < 0 or start.y < 0 or end.x < 0 or end.y < 0 or \
-       start.x > 7 or start.y > 7 or end.x > 7 or end.y > 7:
+    if (
+        start.x < 0
+        or start.y < 0
+        or end.x < 0
+        or end.y < 0
+        or start.x > 7
+        or start.y > 7
+        or end.x > 7
+        or end.y > 7
+    ):
         # Bounds checking xd
         return False
 
@@ -82,7 +94,7 @@ def attempt_move(board, player_color: PlayerColor, move: MoveType, start: Coord,
     if end_location is not None:
         # Invalid move, must be empty to move here
         return False
-    
+
     # valid_moves = []
     # if start_piece.king:
     #     # King valid moves
@@ -90,8 +102,9 @@ def attempt_move(board, player_color: PlayerColor, move: MoveType, start: Coord,
 
     dist_x = end.x - start.x
     dist_y = end.y - start.y
-    if abs(dist_x) > 1 or abs(dist_y) > 1:
+    if abs(dist_x) > 2 or abs(dist_y) > 2:
         # Invalid move, no valid move can cross a distance of more than two squares
+        print("failing generic distance check")
         return False
     elif dist_x == 0 or dist_y == 0:
         # if either distance is zero the direction of the move wasn't diagonal
@@ -105,13 +118,18 @@ def attempt_move(board, player_color: PlayerColor, move: MoveType, start: Coord,
         elif player_color == PlayerColor.WHITE:
             if dist_x < 0 and dist_y < 0:
                 return False
-    
+
     match move:
         case MoveType.MOVE:
-            pass
+            # TODO: Needs unit testsed
+            # ensure the destination is only one square away
+            if abs(dist_x) != 1 or abs(dist_y) != 1:
+                return False
+            print("player gave valid move")
         case MoveType.CAPTURE:
             pass
         case MoveType.KING_ME:
+            # TODO: This still needs implemented; how are kings even handled?
             pass
         case _:
             return False
@@ -123,17 +141,21 @@ class PlayerColor(StrEnum):
     WHITE = "white"
     BLACK = "black"
 
+
 class PieceEnum(StrEnum):
     WHITE = "w"
     BLACK = "b"
-    
+
+
 class MoveType(StrEnum):
     KING_ME = "K"
     CAPTURE = "c"
-    MOVE    = "m"
+    MOVE = "m"
+
 
 class Player(BaseModel):
     color: PlayerColor
+
 
 class Piece(BaseModel):
     color: PieceEnum
@@ -143,51 +165,31 @@ class Piece(BaseModel):
     def serialize(self):
         return self.color
 
+
 class Coord(BaseModel):
     x: int
     y: int
 
+
 class Checkers(BaseModel):
     board: list[list[str | None]] = Field(frozen=True, default=init_board())
 
+    # if player_color == PlayerColor.WHITE:
+    #     move_1 = board[start.x-1][start.y+1]
+    #     move_2 = board[start.x+1][start.y+1]
+    #     move_3 = board[start.x-2][start.y+2]
+    #     move_4 = board[start.x+2][start.y+2]
+    # elif player_color == PlayerColor.BLACK:
+    #     move_1 = board[start.x-1][start.y-1]
+    #     move_2 = board[start.x+1][start.y-1]
+    #     move_3 = board[start.x-2][start.y-2]
+    #     move_4 = board[start.x+2][start.y-2]
 
+    # if move_1 is not None:
+    #     valid_moves.append(move_1)
+    # if move_2 is not None:
+    #     valid_moves.append(move_2)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # if player_color == PlayerColor.WHITE:
-        #     move_1 = board[start.x-1][start.y+1]
-        #     move_2 = board[start.x+1][start.y+1]
-        #     move_3 = board[start.x-2][start.y+2]
-        #     move_4 = board[start.x+2][start.y+2]
-        # elif player_color == PlayerColor.BLACK:
-        #     move_1 = board[start.x-1][start.y-1]
-        #     move_2 = board[start.x+1][start.y-1]
-        #     move_3 = board[start.x-2][start.y-2]
-        #     move_4 = board[start.x+2][start.y-2]
-        
-        # if move_1 is not None:
-        #     valid_moves.append(move_1)
-        # if move_2 is not None:
-        #     valid_moves.append(move_2)
-    
     # if len(valid_moves) == 0:
     #     # Invalid move, piece has no possible moves
     #     return False
