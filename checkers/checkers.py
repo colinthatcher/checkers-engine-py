@@ -1,4 +1,3 @@
-import math
 from pydantic import BaseModel, Field, model_serializer
 from enum import StrEnum
 
