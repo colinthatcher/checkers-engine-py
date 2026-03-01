@@ -85,7 +85,7 @@ class PieceEnum(StrEnum):
     BLACK = "b"
 
 class Player(BaseModel):
-    color: PlayerColorEnum
+    color: PlayerColor
 
 class Piece(BaseModel):
     color: PieceEnum
