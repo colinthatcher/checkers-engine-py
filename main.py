@@ -29,6 +29,7 @@ def get_game() -> Checkers:
 @app.get("/ws")
 async def ws():
     from checkers.tui.websocket_html import html
+
     return HTMLResponse(html)
 
 
