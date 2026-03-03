@@ -65,6 +65,7 @@ def attempt_move(
     board, player_color: PlayerColor, move: MoveType, start: Coord, end: Coord
 ) -> bool:
     if start == None or end == None:
+        print("start or end are none")
         return False
 
     if (
@@ -78,10 +79,12 @@ def attempt_move(
         or end.y > 7
     ):
         # Bounds checking xd
+        print("coordinates are out of bounds")
         return False
 
     if start.x == end.x and start.y == end.y:
         # Same location dummy
+        print("start and end are the same")
         return False
 
     start_piece: Piece = board[start.y][start.x]
@@ -89,45 +92,75 @@ def attempt_move(
 
     if start_piece is None:
         # Invalid move, piece location incorrect
+        print("start piece is none")
+        return False
+
+    if (start_piece.color is start_piece.color.WHITE and player_color is not player_color.WHITE) or (
+        start_piece.color is start_piece.color.BLACK and player_color is not player_color.BLACK
+    ):
+        print("start piece does not belong to the player")
         return False
 
     if end_location is not None:
         # Invalid move, must be empty to move here
+        print("end location is not none")
         return False
-
-    # valid_moves = []
-    # if start_piece.king:
-    #     # King valid moves
-    #     pass
 
     dist_x = end.x - start.x
     dist_y = end.y - start.y
     if abs(dist_x) > 2 or abs(dist_y) > 2:
         # Invalid move, no valid move can cross a distance of more than two squares
-        print("failing generic distance check")
+        print("distance is too large")
         return False
     elif dist_x == 0 or dist_y == 0:
         # if either distance is zero the direction of the move wasn't diagonal
+        print("distance is zero")
         return False
 
     if not start_piece.king:
-        # make sure player color is moving the correct direction
+        # make sure player color is moving the correct direction, only the y distance
+        # indicates if the piece is moving the correct direction.
         if player_color == PlayerColor.BLACK:
-            if dist_x > 0 and dist_y > 0:
+            if dist_y > 0:
+                print("wrong direction for a black piece")
                 return False
         elif player_color == PlayerColor.WHITE:
-            if dist_x < 0 and dist_y < 0:
+            if dist_y < 0:
+                print("wrong direction for a white piece")
                 return False
 
     match move:
         case MoveType.MOVE:
-            # TODO: Needs unit testsed
             # ensure the destination is only one square away
             if abs(dist_x) != 1 or abs(dist_y) != 1:
+                print("distance too large for a move")
                 return False
-            print("player gave valid move")
         case MoveType.CAPTURE:
-            pass
+            print(dist_x, dist_y)
+            if abs(dist_x) != 2 or abs(dist_y) != 2:
+                print("too long of a capture")
+                return False
+            captured_piece_coords = Coord(
+                x=start.x + (dist_x // 2), y=start.y + (dist_y // 2)
+            )
+            captured_piece: Piece = board[captured_piece_coords.y][
+                captured_piece_coords.x
+            ]
+            if captured_piece == None:
+                print("no piece to capture")
+                return False
+            if (
+                captured_piece.color == PieceEnum.WHITE
+                and start_piece.color == PieceEnum.WHITE
+            ):
+                print("white can't capture white")
+                return False
+            elif (
+                captured_piece.color == PieceEnum.BLACK
+                and start_piece.color == PieceEnum.BLACK
+            ):
+                print("black can't capture black")
+                return False
         case MoveType.KING_ME:
             # TODO: This still needs implemented; how are kings even handled?
             pass

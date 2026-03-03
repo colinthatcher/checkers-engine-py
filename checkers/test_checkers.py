@@ -52,7 +52,7 @@ def test_attempt_move_bounds_checks():
         assert not valid_move
     # check end coordinate bounds
     for move in invalid_moves:
-        valid_move = attempt_move(board, PlayerColor.WHITE, MoveType.MOVE, move, coord)
+        valid_move = attempt_move(board, PlayerColor.WHITE, MoveType.MOVE, coord, move)
         # validate output
         assert not valid_move
 
@@ -70,6 +70,21 @@ def test_attempt_move_start_piece_is_none():
     end = Coord(x=1, y=1)
     valid_move = attempt_move(board, PlayerColor.WHITE, MoveType.MOVE, start, end)
     assert not valid_move
+
+
+def test_attempt_move_start_piece_does_not_match_the_player():
+    pieces = [
+        (Coord(x=1, y=1), Piece(color=PieceEnum.BLACK)),
+        (Coord(x=6, y=6), Piece(color=PieceEnum.WHITE)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+    moves = [
+            (PlayerColor.WHITE, Coord(x=1,y=1), Coord(x=0,y=0)),
+            (PlayerColor.BLACK, Coord(x=6,y=6), Coord(x=7,y=7))
+    ]
+    for move in moves:
+        valid_move = attempt_move(board, move[0], MoveType.MOVE, move[1], move[2])
+        assert not valid_move
 
 
 def test_attempt_move_end_location_is_not_none():
@@ -144,6 +159,41 @@ def test_attempt_move_successful_move():
     for move in moves:
         valid_move = attempt_move(board, move[0], MoveType.MOVE, move[1], move[2])
         assert valid_move
+
+
+def test_attempt_move_capture_too_long_of_jump():
+    white_piece = (Coord(x=3, y=2), Piece(color=PieceEnum.WHITE))
+    black_piece = (Coord(x=2, y=5), Piece(color=PieceEnum.BLACK))
+    board = helper_setup_board(helper_empty_board(), [white_piece])
+    move = (PlayerColor.WHITE, MoveType.CAPTURE, white_piece[0], Coord(x=0, y=5))
+    valid_move = attempt_move(board, move[0], move[1], move[2], move[3])
+    assert not valid_move
+
+
+def test_attempt_move_capture_no_piece_to_capture():
+    white_piece = (Coord(x=3, y=2), Piece(color=PieceEnum.WHITE))
+    board = helper_setup_board(helper_empty_board(), [white_piece])
+    move = (PlayerColor.WHITE, MoveType.CAPTURE, white_piece[0], Coord(x=5, y=4))
+    valid_move = attempt_move(board, move[0], move[1], move[2], move[3])
+    assert not valid_move
+
+
+def test_attempt_move_capture_wrong_color():
+    white_piece = (Coord(x=3, y=2), Piece(color=PieceEnum.WHITE))
+    white_piece_two = (Coord(x=2, y=3), Piece(color=PieceEnum.WHITE))
+    black_piece = (Coord(x=4, y=5), Piece(color=PieceEnum.BLACK))
+    black_piece_two = (Coord(x=5, y=4), Piece(color=PieceEnum.BLACK))
+    board = helper_setup_board(
+        helper_empty_board(),
+        [white_piece, white_piece_two, black_piece, black_piece_two],
+    )
+    moves = [
+        (PlayerColor.WHITE, MoveType.CAPTURE, white_piece[0], Coord(x=1, y=4)),
+        (PlayerColor.BLACK, MoveType.CAPTURE, black_piece[0], Coord(x=6, y=3)),
+    ]
+    for move in moves:
+        valid_move = attempt_move(board, move[0], move[1], move[2], move[3])
+        assert not valid_move
 
 
 def test_attempt_move_successful_capture():
