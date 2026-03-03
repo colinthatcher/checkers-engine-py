@@ -129,9 +129,7 @@ def test_attempt_move_incorrect_direction():
         (PlayerColor.WHITE, white_piece[0], Coord(x=1, y=4)),
     ]
     for move in moves:
-        valid_move = attempt_move(
-            board, move[0], MoveType.MOVE, move[1], move[2]
-        )
+        valid_move = attempt_move(board, move[0], MoveType.MOVE, move[1], move[2])
         assert not valid_move
 
 
@@ -144,9 +142,7 @@ def test_attempt_move_successful_move():
         (PlayerColor.BLACK, black_piece[0], Coord(x=1, y=4)),
     ]
     for move in moves:
-        valid_move = attempt_move(
-            board, move[0], MoveType.MOVE, move[1], move[2]
-        )
+        valid_move = attempt_move(board, move[0], MoveType.MOVE, move[1], move[2])
         assert valid_move
 
 
@@ -158,9 +154,7 @@ def test_attempt_move_successful_capture():
         (PlayerColor.WHITE, MoveType.CAPTURE, white_piece[0], Coord(x=3, y=4)),
     ]
     for move in moves:
-        valid_move = attempt_move(
-            board, move[0], move[1], move[2], move[3]
-        )
+        valid_move = attempt_move(board, move[0], move[1], move[2], move[3])
         assert valid_move
 
 
