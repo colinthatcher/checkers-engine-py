@@ -173,23 +173,3 @@ class Coord(BaseModel):
 
 class Checkers(BaseModel):
     board: list[list[str | None]] = Field(frozen=True, default=init_board())
-
-    # if player_color == PlayerColor.WHITE:
-    #     move_1 = board[start.x-1][start.y+1]
-    #     move_2 = board[start.x+1][start.y+1]
-    #     move_3 = board[start.x-2][start.y+2]
-    #     move_4 = board[start.x+2][start.y+2]
-    # elif player_color == PlayerColor.BLACK:
-    #     move_1 = board[start.x-1][start.y-1]
-    #     move_2 = board[start.x+1][start.y-1]
-    #     move_3 = board[start.x-2][start.y-2]
-    #     move_4 = board[start.x+2][start.y-2]
-
-    # if move_1 is not None:
-    #     valid_moves.append(move_1)
-    # if move_2 is not None:
-    #     valid_moves.append(move_2)
-
-    # if len(valid_moves) == 0:
-    #     # Invalid move, piece has no possible moves
-    #     return False
