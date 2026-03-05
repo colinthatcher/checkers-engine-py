@@ -100,19 +100,19 @@ def attempt_move(
         print("start and end are the same")
         return False
 
-    piece: Piece = board[start.y][start.x]
+    start_piece: Piece = board[start.y][start.x]
     end_location: None = board[end.y][end.x]
 
-    if piece is None:
+    if start_piece is None:
         # Invalid move, piece location incorrect
         print("start piece coord is empty")
         return False
 
     if (
-        piece.color is piece.color.WHITE
+        start_piece.color is start_piece.color.WHITE
         and player_color is not player_color.WHITE
     ) or (
-        piece.color is piece.color.BLACK
+        start_piece.color is start_piece.color.BLACK
         and player_color is not player_color.BLACK
     ):
         print("start piece does not belong to the player")
@@ -134,7 +134,7 @@ def attempt_move(
         print("distance is zero on one axis")
         return False
 
-    if not piece.king:
+    if not start_piece.king:
         # make sure player color is moving the correct direction, only the y distance
         # indicates if the piece is moving the correct direction.
         if player_color == PlayerColor.BLACK:
@@ -154,8 +154,8 @@ def attempt_move(
                 return False
 
             # valid move
-            auto_king(piece, player_color, end)
-            board[end.y][end.x] = piece
+            auto_king(start_piece, player_color, end)
+            board[end.y][end.x] = start_piece
             board[start.y][start.x] = None
             return True
         case MoveType.CAPTURE:
@@ -174,21 +174,21 @@ def attempt_move(
                 return False
             if (
                 captured_piece.color == PieceEnum.WHITE
-                and piece.color == PieceEnum.WHITE
+                and start_piece.color == PieceEnum.WHITE
             ):
                 print("white can't capture white")
                 return False
             elif (
                 captured_piece.color == PieceEnum.BLACK
-                and piece.color == PieceEnum.BLACK
+                and start_piece.color == PieceEnum.BLACK
             ):
                 print("black can't capture black")
                 return False
 
             # valid move
-            auto_king(piece, player_color, end)
+            auto_king(start_piece, player_color, end)
             board[captured_piece_coords.y][captured_piece_coords.x] = None
-            board[end.y][end.x] = piece
+            board[end.y][end.x] = start_piece
             board[start.y][start.x] = None
             return True
         case _:
