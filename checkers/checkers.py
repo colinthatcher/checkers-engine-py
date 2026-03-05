@@ -66,11 +66,11 @@ def check_draw(board, move_history) -> bool:
     pass
 
 
-def auto_king(start_piece: Piece, player_color: PlayerColor, end: Coord):
+def auto_king(piece: Piece, player_color: PlayerColor, end: Coord):
     if player_color == PlayerColor.BLACK and end.y == 0:
-        start_piece.king = True
+        piece.king = True
     elif player_color == PlayerColor.WHITE and end.y == 7:
-        start_piece.king = True
+        piece.king = True
 
 
 # TODO: We will need to check an array of moves, dunno if we want that in here or in a wrapper method
@@ -100,19 +100,19 @@ def attempt_move(
         print("start and end are the same")
         return False
 
-    start_piece: Piece = board[start.y][start.x]
+    piece: Piece = board[start.y][start.x]
     end_location: None = board[end.y][end.x]
 
-    if start_piece is None:
+    if piece is None:
         # Invalid move, piece location incorrect
         print("start piece coord is empty")
         return False
 
     if (
-        start_piece.color is start_piece.color.WHITE
+        piece.color is piece.color.WHITE
         and player_color is not player_color.WHITE
     ) or (
-        start_piece.color is start_piece.color.BLACK
+        piece.color is piece.color.BLACK
         and player_color is not player_color.BLACK
     ):
         print("start piece does not belong to the player")
@@ -134,7 +134,7 @@ def attempt_move(
         print("distance is zero on one axis")
         return False
 
-    if not start_piece.king:
+    if not piece.king:
         # make sure player color is moving the correct direction, only the y distance
         # indicates if the piece is moving the correct direction.
         if player_color == PlayerColor.BLACK:
@@ -154,8 +154,8 @@ def attempt_move(
                 return False
 
             # valid move
-            auto_king(start_piece, player_color, end)
-            board[end.y][end.x] = start_piece
+            auto_king(piece, player_color, end)
+            board[end.y][end.x] = piece
             board[start.y][start.x] = None
             return True
         case MoveType.CAPTURE:
@@ -174,21 +174,21 @@ def attempt_move(
                 return False
             if (
                 captured_piece.color == PieceEnum.WHITE
-                and start_piece.color == PieceEnum.WHITE
+                and piece.color == PieceEnum.WHITE
             ):
                 print("white can't capture white")
                 return False
             elif (
                 captured_piece.color == PieceEnum.BLACK
-                and start_piece.color == PieceEnum.BLACK
+                and piece.color == PieceEnum.BLACK
             ):
                 print("black can't capture black")
                 return False
 
             # valid move
-            auto_king(start_piece, player_color, end)
+            auto_king(piece, player_color, end)
             board[captured_piece_coords.y][captured_piece_coords.x] = None
-            board[end.y][end.x] = start_piece
+            board[end.y][end.x] = piece
             board[start.y][start.x] = None
             return True
         case _:
