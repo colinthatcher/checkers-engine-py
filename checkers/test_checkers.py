@@ -1,13 +1,10 @@
 from checkers import (
     init_board,
-    Coord,
-    Piece,
-    PieceEnum,
     print_board,
+    check_winner,
     attempt_move,
-    PlayerColor,
-    MoveType,
 )
+from structs import *
 
 
 def helper_empty_board() -> list[list[None]]:
@@ -79,8 +76,8 @@ def test_attempt_move_start_piece_does_not_match_the_player():
     ]
     board = helper_setup_board(helper_empty_board(), pieces)
     moves = [
-            (PlayerColor.WHITE, Coord(x=1,y=1), Coord(x=0,y=0)),
-            (PlayerColor.BLACK, Coord(x=6,y=6), Coord(x=7,y=7))
+        (PlayerColor.WHITE, Coord(x=1, y=1), Coord(x=0, y=0)),
+        (PlayerColor.BLACK, Coord(x=6, y=6), Coord(x=7, y=7)),
     ]
     for move in moves:
         valid_move = attempt_move(board, move[0], MoveType.MOVE, move[1], move[2])
@@ -228,10 +225,103 @@ def test_attempt_first_move():
     assert valid_move
 
 
-# def test_attempt_move_dev():
-#     board = init_board()
-#     # 2,5 -> 1,4
-#     valid_move = attempt_move(
-#         board, PlayerColor.WHITE, MoveType.MOVE, Coord(x=2, y=5), Coord(x=1, y=4)
-#     )
-#     assert valid_move
+# Also tests king capturing "backwards"
+def test_check_winner():
+    pieces = [
+        (Coord(y=0, x=1), Piece(color=PieceEnum.BLACK, king=True)),
+        (Coord(y=1, x=2), Piece(color=PieceEnum.WHITE)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+
+    winner: str | None = check_winner(board)
+    assert winner is None
+
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.CAPTURE, Coord(y=0, x=1), Coord(y=2, x=3)
+    )
+    assert move_success
+
+    winner: str | None = check_winner(board)
+    assert winner == PlayerColor.BLACK
+
+
+def test_capture_jumping():
+    board = init_board()
+
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.MOVE, Coord(y=5, x=2), Coord(y=4, x=3)
+    )
+    assert move_success
+
+    move_success = attempt_move(
+        board, PlayerColor.WHITE, MoveType.MOVE, Coord(y=2, x=1), Coord(y=3, x=0)
+    )
+    assert move_success
+
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.MOVE, Coord(y=4, x=3), Coord(y=3, x=4)
+    )
+    assert move_success
+
+    move_success = attempt_move(
+        board, PlayerColor.WHITE, MoveType.CAPTURE, Coord(y=2, x=5), Coord(y=4, x=3)
+    )
+    assert move_success
+
+
+def test_kinging_via_capture():
+    pieces = [
+        (Coord(y=2, x=3), Piece(color=PieceEnum.BLACK)),
+        (Coord(y=1, x=2), Piece(color=PieceEnum.WHITE)),
+        (Coord(y=5, x=4), Piece(color=PieceEnum.WHITE)),
+        (Coord(y=6, x=3), Piece(color=PieceEnum.BLACK)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+
+    # test kinging black
+    assert not board[2][3].king
+
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.CAPTURE, Coord(y=2, x=3), Coord(y=0, x=1)
+    )
+    assert move_success
+
+    assert board[0][1].king
+
+    # test kinging white
+    assert not board[5][4].king
+
+    move_success = attempt_move(
+        board, PlayerColor.WHITE, MoveType.CAPTURE, Coord(y=5, x=4), Coord(y=7, x=2)
+    )
+    assert move_success
+
+    assert board[7][2].king
+
+
+def test_kinging_via_move():
+    pieces = [
+        (Coord(y=1, x=2), Piece(color=PieceEnum.BLACK)),
+        (Coord(y=6, x=3), Piece(color=PieceEnum.WHITE)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+
+    # test kinging black
+    assert not board[1][2].king
+
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.MOVE, Coord(y=1, x=2), Coord(y=0, x=3)
+    )
+    assert move_success
+
+    assert board[0][3].king
+
+    # test kinging white
+    assert not board[6][3].king
+
+    move_success = attempt_move(
+        board, PlayerColor.WHITE, MoveType.MOVE, Coord(y=6, x=3), Coord(y=7, x=4)
+    )
+    assert move_success
+
+    assert board[7][4].king

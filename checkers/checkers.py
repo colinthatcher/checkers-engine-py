@@ -1,6 +1,5 @@
 import logging
-from pydantic import BaseModel, Field, model_serializer
-from enum import StrEnum
+from structs import *
 
 
 def print_board(board):
@@ -42,22 +41,36 @@ def init_board() -> list[list[Piece | None]]:
     return board
 
 
-# TOTALLY UNTESTED
 def check_winner(board) -> str | None:
     black_count = 0
     white_count = 0
-    for row in board:
-        for piece in row:
-            if piece == Piece.BLACK_PIECE:
-                black_count += 1
-            elif piece == Piece.WHITE_PIECE:
-                white_count += 1
+    for piece in [piece for row in board for piece in row if piece is not None]:
+        if piece.color == PieceEnum.BLACK:
+            black_count += 1
+        elif piece.color == PieceEnum.WHITE:
+            white_count += 1
 
+    # Not a race condition™
     if black_count == 0:
-        return "black"
+        return PlayerColor.WHITE
     elif white_count == 0:
-        return "white"
+        return PlayerColor.BLACK
+
+    # TODO: Check for stalemate position where one player has blocked any valid moves from the other
+
     return None
+
+
+def check_draw(board, move_history) -> bool:
+    # TODO: determine if a draw condition has occured according to the rules
+    pass
+
+
+def auto_king(start_piece: Piece, player_color: PlayerColor, end: Coord):
+    if player_color == PlayerColor.BLACK and end.y == 0:
+        start_piece.king = True
+    elif player_color == PlayerColor.WHITE and end.y == 7:
+        start_piece.king = True
 
 
 # TODO: We will need to check an array of moves, dunno if we want that in here or in a wrapper method
@@ -65,7 +78,7 @@ def attempt_move(
     board, player_color: PlayerColor, move: MoveType, start: Coord, end: Coord
 ) -> bool:
     if start == None or end == None:
-        print("start or end are none")
+        print("start or end coord is empty")
         return False
 
     if (
@@ -92,18 +105,22 @@ def attempt_move(
 
     if start_piece is None:
         # Invalid move, piece location incorrect
-        print("start piece is none")
+        print("start piece coord is empty")
         return False
 
-    if (start_piece.color is start_piece.color.WHITE and player_color is not player_color.WHITE) or (
-        start_piece.color is start_piece.color.BLACK and player_color is not player_color.BLACK
+    if (
+        start_piece.color is start_piece.color.WHITE
+        and player_color is not player_color.WHITE
+    ) or (
+        start_piece.color is start_piece.color.BLACK
+        and player_color is not player_color.BLACK
     ):
         print("start piece does not belong to the player")
         return False
 
     if end_location is not None:
         # Invalid move, must be empty to move here
-        print("end location is not none")
+        print("end location is not empty")
         return False
 
     dist_x = end.x - start.x
@@ -114,7 +131,7 @@ def attempt_move(
         return False
     elif dist_x == 0 or dist_y == 0:
         # if either distance is zero the direction of the move wasn't diagonal
-        print("distance is zero")
+        print("distance is zero on one axis")
         return False
 
     if not start_piece.king:
@@ -135,10 +152,16 @@ def attempt_move(
             if abs(dist_x) != 1 or abs(dist_y) != 1:
                 print("distance too large for a move")
                 return False
+
+            # valid move
+            auto_king(start_piece, player_color, end)
+            board[end.y][end.x] = start_piece
+            board[start.y][start.x] = None
+            return True
         case MoveType.CAPTURE:
             print(dist_x, dist_y)
             if abs(dist_x) != 2 or abs(dist_y) != 2:
-                print("too long of a capture")
+                print("too short/long of a capture")
                 return False
             captured_piece_coords = Coord(
                 x=start.x + (dist_x // 2), y=start.y + (dist_y // 2)
@@ -161,47 +184,19 @@ def attempt_move(
             ):
                 print("black can't capture black")
                 return False
-        case MoveType.KING_ME:
-            # TODO: This still needs implemented; how are kings even handled?
-            pass
+
+            # valid move
+            auto_king(start_piece, player_color, end)
+            board[captured_piece_coords.y][captured_piece_coords.x] = None
+            board[end.y][end.x] = start_piece
+            board[start.y][start.x] = None
+            return True
         case _:
+            print("move type invalid")
             return False
 
-    return True
-
-
-class PlayerColor(StrEnum):
-    WHITE = "white"
-    BLACK = "black"
-
-
-class PieceEnum(StrEnum):
-    WHITE = "w"
-    BLACK = "b"
-
-
-class MoveType(StrEnum):
-    KING_ME = "K"
-    CAPTURE = "c"
-    MOVE = "m"
-
-
-class Player(BaseModel):
-    color: PlayerColor
-
-
-class Piece(BaseModel):
-    color: PieceEnum
-    king: bool = Field(default=False)
-
-    @model_serializer
-    def serialize(self):
-        return self.color
-
-
-class Coord(BaseModel):
-    x: int
-    y: int
+    print("unmitigated disaster")
+    return False
 
 
 class Checkers(BaseModel):
