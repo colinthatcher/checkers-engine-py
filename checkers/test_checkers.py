@@ -226,7 +226,7 @@ def test_attempt_first_move():
 
 
 # Also tests king capturing "backwards"
-def test_check_winner():
+def test_check_winner_black():
     pieces = [
         (Coord(y=0, x=1), Piece(color=PieceEnum.BLACK, king=True)),
         (Coord(y=1, x=2), Piece(color=PieceEnum.WHITE)),
@@ -243,6 +243,25 @@ def test_check_winner():
 
     winner: str | None = check_winner(board)
     assert winner == PlayerColor.BLACK
+
+
+def test_check_winner_white():
+    pieces = [
+        (Coord(y=0, x=1), Piece(color=PieceEnum.WHITE, king=True)),
+        (Coord(y=1, x=2), Piece(color=PieceEnum.BLACK)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+
+    winner: str | None = check_winner(board)
+    assert winner is None
+
+    move_success = attempt_move(
+        board, PlayerColor.WHITE, MoveType.CAPTURE, Coord(y=0, x=1), Coord(y=2, x=3)
+    )
+    assert move_success
+
+    winner: str | None = check_winner(board)
+    assert winner == PlayerColor.WHITE
 
 
 def test_capture_jumping():
