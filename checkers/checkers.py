@@ -44,11 +44,14 @@ def init_board() -> list[list[Piece | None]]:
 def check_winner(board) -> str | None:
     black_count = 0
     white_count = 0
-    for piece in [piece for row in board for piece in row if piece is not None]:
-        if piece.color == PieceEnum.BLACK:
-            black_count += 1
-        elif piece.color == PieceEnum.WHITE:
-            white_count += 1
+    for row in board:
+        for piece in row:
+            if piece is None:
+                continue
+            if piece.color == PieceEnum.BLACK:
+                black_count += 1
+            elif piece.color == PieceEnum.WHITE:
+                white_count += 1
 
     # Not a race condition™
     if black_count == 0:
