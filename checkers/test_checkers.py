@@ -1,10 +1,7 @@
-from checkers import (
-    init_board,
-    print_board,
-    check_winner,
-    attempt_move,
-)
-from structs import *
+from .engine import *
+from .structs import *
+from .tools import *
+from .checkers import *
 
 
 def helper_empty_board() -> list[list[None]]:
@@ -344,3 +341,24 @@ def test_kinging_via_move():
     assert move_success
 
     assert board[7][4].king
+
+
+def test_hash_board():
+    pieces = [
+        (Coord(y=2, x=3), Piece(color=PieceEnum.BLACK)),
+        (Coord(y=1, x=2), Piece(color=PieceEnum.WHITE)),
+        (Coord(y=5, x=4), Piece(color=PieceEnum.WHITE)),
+        (Coord(y=6, x=3), Piece(color=PieceEnum.BLACK)),
+    ]
+    board = helper_setup_board(helper_empty_board(), pieces)
+
+    start_board_hash = hash_board(board)
+    move_success = attempt_move(
+        board, PlayerColor.BLACK, MoveType.CAPTURE, Coord(y=2, x=3), Coord(y=0, x=1)
+    )
+    assert move_success
+
+    end_board_hash = hash_board(board)
+
+    assert start_board_hash != end_board_hash
+    assert end_board_hash == hash_board(board)

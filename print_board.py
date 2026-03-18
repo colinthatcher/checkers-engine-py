@@ -1,4 +1,4 @@
-from checkers.checkers import *
+from checkers.engine import *
 
 board = init_board()
 print_board(board)

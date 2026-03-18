@@ -33,3 +33,9 @@ class Piece(BaseModel):
 class Coord(BaseModel):
     x: int
     y: int
+
+
+class MovePayload(BaseModel):
+    move_type: MoveType
+    start_position: Coord
+    end_position: Coord

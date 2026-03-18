@@ -8,7 +8,7 @@ uv sync
 ```
 
 ## Run API Server
-`fastapi dev main.py`
+`fastapi dev checkers/main.py`
 
 ## Run Tests
 `pytest`
